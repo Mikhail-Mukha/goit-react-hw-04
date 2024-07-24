@@ -8,8 +8,27 @@ import axios from "axios";
 import LoadMoreBtn from "../LoadMoreBtn/LoadMoreBtn";
 import ImageModal from "../ImageModal/ImageModal";
 
-const API_KEY = "QxwtyiynyLrOT1cpYeYexFds8RMCeu7pxWoIvifoCIY";
+const API_KEY = "WgBZs32C0FE638ylFiqLWFLny3RBOmApS89jOLltui8";
 const BASE_URL = "https://api.unsplash.com";
+
+// const arrey = [
+//   {
+//     id: "boMKfQkphro",
+//     urls: {
+//       small:
+//         "https://images.unsplash.com/photo-1721332149267-ef9b10eaacd9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w2MzUxOTl8MXwxfGFsbHwxfHx8fHx8Mnx8MTcyMTc2OTAxOXw&ixlib=rb-4.0.3&q=80&w=400",
+//     },
+//     alt_description: "A close up of a motherboard and a pen on a table",
+//   },
+//   {
+//     id: "GLJeszYOSmQ",
+//     urls: {
+//       small:
+//         "https://images.unsplash.com/photo-1721297015609-1374b1378d31?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w2MzUxOTl8MHwxfGFsbHwyfHx8fHx8Mnx8MTcyMTc2OTAxOXw&ixlib=rb-4.0.3&q=80&w=400",
+//     },
+//     alt_description: "An aerial view of a car driving on a dirt road",
+//   },
+// ];
 
 function App() {
   const [page, setPage] = useState(1);
@@ -28,15 +47,22 @@ function App() {
     const fetchImages = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`${BASE_URL}/search/photos`, {
-          params: {
-            query,
-            page,
-            per_page: 16,
-            client_id: API_KEY,
-          },
-        });
-        setPhotos((prevImage) => [...prevImage, ...response.data.results]);
+        const response = await axios.get(
+          `${BASE_URL}/search/photos?client_id=${API_KEY}`,
+          {
+            params: {
+              query,
+              page,
+              per_page: 16,
+            },
+          }
+        );
+        if (response.data.results.length === 0) {
+          setIsEmpty(true);
+        } else {
+          setPhotos((prevPhotos) => [...prevPhotos, ...response.data.results]);
+          setIsVisible(response.data.results.length === 16);
+        }
       } catch (error) {
         setError(error);
       } finally {
@@ -44,7 +70,7 @@ function App() {
       }
     };
     fetchImages();
-  }, [page, query]);
+  }, [query, page]);
 
   const onHandleSubmit = (value) => {
     if (value === query) return;
@@ -56,8 +82,8 @@ function App() {
     setError(null);
   };
 
-  const openModal = (image) => {
-    setModalImage(image);
+  const openModal = (photo) => {
+    setModalImage(photo);
     setShowModal(true);
   };
 
@@ -69,26 +95,27 @@ function App() {
   return (
     <>
       <SearchBar onSubmit={onHandleSubmit} />
-      {photos.langth > 0 && (
-        <ImageGallery photos={photos} onImageClick={openModal} />
+      {photos.length > 0 && (
+        <ImageGallery photos={photos} onClick={openModal} />
       )}
-      {!photos.langth && !isEmpty && <p> Let`s begit saerch</p>}
+      {!photos.length && !isEmpty && <p> Let`s begit saerch</p>}
       {loading && <Loader />}
-      {error && <ErrorMessage />}
+      {error && (
+        <ErrorMessage
+          name="fetchError"
+          component="div"
+          message="Something went wrong"
+        />
+      )}
       {isEmpty && <p>Sorry. There are not images ...</p>}
       {isVisible && !loading && (
-        <button onClick={() => setPage((prevPage) => prevPage + 1)}>
-          Завантажити більше
-        </button>
-      )}
-      {photos.length > 0 && !loading && (
         <LoadMoreBtn onClick={() => setPage((prevPage) => prevPage + 1)} />
       )}
       {showModal && (
         <ImageModal
           isOpen={showModal}
           onRequestClose={closeModal}
-          image={modalImage}
+          photo={modalImage}
         />
       )}
     </>

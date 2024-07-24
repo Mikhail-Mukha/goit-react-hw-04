@@ -1,14 +1,11 @@
 import s from "./ImageCard.module.css";
 
-const ImageCard = ({ photos }) => {
+const ImageCard = ({ photo, onClick }) => {
+  const { urls, alt_description } = photo;
   return (
-    <>
-      {photos.map((photo) => (
-        <li key={photo.id} className={s.item}>
-          <img src={photo.urls.small} alt={photo.alt_description} />
-        </li>
-      ))}
-    </>
+    <div className={s.wrap} onClick={() => onClick(photo)}>
+      <img className={s.img} src={urls.small} alt={alt_description} />
+    </div>
   );
 };
 
